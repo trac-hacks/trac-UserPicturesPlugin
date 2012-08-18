@@ -8,3 +8,12 @@ img.userpictures_avatar.timeline {
   margin-left: -5.8em;
   vertical-align: text-top;
 }
+
+img.userpictures_avatar.ticket-reporter {
+  float: left;
+  margin: 0 10px 10px 0px;
+}
+
+img.userpictures_avatar.ticket-comment {
+  margin: 0 5px 5px 0;
+}
