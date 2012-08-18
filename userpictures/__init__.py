@@ -35,6 +35,7 @@ class UserPicturesModule(Component):
     ticket_owner_size = Option("userpictures", "ticket_owner_size", default="30")
     ticket_comment_size = Option("userpictures", "ticket_comment_size", default="40")
     timeline_size = Option("userpictures", "timeline_size", default="30")
+    report_size = Option("userpictures", "report_size", default="20")
     browser_changeset_size = Option("userpictures", "browser_changeset_size", default="30")
     browser_filesource_size = Option("userpictures", "browser_filesource_size", default="40")
     browser_lineitem_size = Option("userpictures", "browser_lineitem_size", default="20")
@@ -62,6 +63,8 @@ class UserPicturesModule(Component):
             filter_.extend(self._log_filter(req, data))
         elif req.path_info.startswith("/search"):
             filter_.extend(self._search_filter(req, data))
+        elif req.path_info.startswith("/report") or req.path_info.startswith("/query"):
+            filter_.extend(self._report_filter(req, data))
 
         for f in filter_:
             if f is not None:
@@ -211,3 +214,20 @@ class UserPicturesModule(Component):
             return itertools.chain([stream[0]], tag, stream[1:])
 
         return [Transformer('//span[@class="author"]').filter(find_change)]
+
+    def _report_filter(self, req, data):
+        if 'tickets' not in data and 'row_groups' not in data:
+            return []
+
+        if 'tickets' in data:
+            class_ = 'query'
+        elif 'row_groups' in data:
+            class_ = 'report'
+
+        def find_change(stream):
+            author = stream[1][1]
+            tag = self._generate_avatar(req, author,
+                                        class_, self.report_size)
+            return itertools.chain([stream[0]], tag, stream[1:])
+
+        return [Transformer('//table[@class="listing tickets"]/tbody/tr/td[@class="owner"]|//table[@class="listing tickets"]/tbody/tr/td[@class="reporter"]').filter(find_change)]

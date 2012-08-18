@@ -1,6 +1,4 @@
 1. Add pictures for:
- * /report/1/
- * /query/
  * /attachment/
  * /wiki/ diff ("last modified") - should be like ticket-comment-diff and browser-changeset
  * /wiki/ history ("history")
