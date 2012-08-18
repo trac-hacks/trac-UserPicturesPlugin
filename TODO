@@ -1,0 +1,21 @@
+1. Add pictures for:
+ * root /browser/ in multirepo situations
+ * /search/ 
+ * /report/1/
+ * /query/
+ * /attachment/
+ * /wiki/ diff ("last modified") - should be like ticket-comment-diff and browser-changeset
+ * /wiki/ history ("history")
+ 
+2. Replace hardcoded gravatar with an OrderedExtensionPoint implementing IUserPicturesProvider
+
+3. Implement Gravatar IUserPicturesProvider
+
+4. Implement UserManager IUserPicturesProvider
+
+5. Implement preferences screens for both IUserPicturesProviders
+
+6. Contact mike beyer
+
+7. Release! Announce!
+
