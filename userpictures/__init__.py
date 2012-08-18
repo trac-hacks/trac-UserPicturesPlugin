@@ -35,7 +35,7 @@ class UserPicturesModule(Component):
     ticket_owner_size = Option("userpictures", "ticket_owner_size", default="30")
     ticket_comment_size = Option("userpictures", "ticket_comment_size", default="40")
     timeline_size = Option("userpictures", "timeline_size", default="30")
-    browser_changeset_size = Option("userpictures", "browser_changeset_size", default="40")
+    browser_changeset_size = Option("userpictures", "browser_changeset_size", default="30")
     browser_lineitem_size = Option("userpictures", "browser_lineitem_size", default="20")
 
     ## ITemplateProvider methods
@@ -54,7 +54,7 @@ class UserPicturesModule(Component):
             filter_.extend(self._ticket_filter(req, data))
         elif req.path_info.startswith("/timeline"):
             filter_.extend(self._timeline_filter(req, data))
-        elif req.path_info.startswith("/browser"):
+        elif req.path_info.startswith("/browser") or req.path_info.startswith("/changeset"):
             filter_.extend(self._browser_filter(req, data))
         elif req.path_info.startswith("/log"):
             filter_.extend(self._log_filter(req, data))
@@ -160,15 +160,25 @@ class UserPicturesModule(Component):
             return self._browser_lineitem_filter(req, data)
 
     def _browser_changeset_filter(self, req, data):
-        if 'file' not in data or not data['file'] or 'changeset' not in data['file']:
+        author = None
+        if data.get('file', {}).get('changeset'):
+            author = data['file']['changeset'].author
+        elif 'changeset' in data:
+            author = data['changeset'].author
+        if author is None:
             return []
-        author = data['file']['changeset'].author
 
         return [lambda stream: Transformer('//table[@id="info"]//th'
                                            ).prepend(self._generate_avatar(
                     req, author,
                     "browser-changeset", self.browser_changeset_size)
-                                                     )(stream)]
+                                                     )(stream),
+                lambda stream: Transformer('//dd[@class="author"]'
+                                           ).prepend(self._generate_avatar(
+                    req, author,
+                    "browser-changeset", self.browser_changeset_size)
+                                                     )(stream),
+                ]
 
     def _browser_lineitem_filter(self, req, data):
         if not data.get('dir') or 'changes' not in data['dir']:
