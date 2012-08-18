@@ -32,6 +32,7 @@ class UserPicturesModule(Component):
 
     ticket_comment_diff_size = Option("userpictures", "ticket_comment_diff_size", default="40")
     ticket_reporter_size = Option("userpictures", "ticket_reporter_size", default="60")
+    ticket_owner_size = Option("userpictures", "ticket_owner_size", default="30")
     ticket_comment_size = Option("userpictures", "ticket_comment_size", default="40")
     timeline_size = Option("userpictures", "timeline_size", default="30")
     browser_changeset_size = Option("userpictures", "browser_changeset_size", default="40")
@@ -81,6 +82,7 @@ class UserPicturesModule(Component):
             filter_.extend(self._ticket_comment_diff_filter(req, data))
         else:
             filter_.extend(self._ticket_reporter_filter(req, data))
+            filter_.extend(self._ticket_owner_filter(req, data))
             filter_.extend(self._ticket_comment_filter(req, data))
         return filter_
 
@@ -103,7 +105,17 @@ class UserPicturesModule(Component):
                     req, author,
                     'ticket-reporter', self.ticket_reporter_size)
                                                      )(stream)]
+    def _ticket_owner_filter(self, req, data):
+        if 'ticket' not in data:
+            return []
+        author = data['ticket'].values['owner']
 
+        return [lambda stream: Transformer('//td[@headers="h_owner"]'
+                                           ).prepend(self._generate_avatar(
+                    req, author,
+                    'ticket-owner', self.ticket_owner_size)
+                                                     )(stream)]
+        
     def _ticket_comment_filter(self, req, data):
         if 'changes' not in data:
             return []
