@@ -7,10 +7,28 @@ import re
 
 from trac.config import *
 from trac.core import *
+from trac.web.chrome import ITemplateProvider, add_stylesheet
 from trac.web.api import ITemplateStreamFilter
 
+class _render_event(object):
+    def __init__(self, event, base_render, generate_avatar):
+        self.event = event
+        self.base_render = base_render
+        self.generate_avatar = generate_avatar
+
+    def __call__(self, field, context):
+        orig = self.base_render(field, context)
+        if field != 'description':
+            return orig
+        if not self.event.get('author'):
+            return orig
+        author = self.event['author']
+
+        return tag.div(self.generate_avatar(author), orig)
+    ## style="padding-top: 0.2em; padding-right: 1em; margin-left: -5.8em; vertical-align: text-top"),
+
 class UserPicturesModule(Component):
-    implements(ITemplateStreamFilter)
+    implements(ITemplateStreamFilter, ITemplateProvider)
 
     ticket_comment_diff_size = Option("userpictures", "ticket_comment_diff_size", default="40")
     ticket_reporter_size = Option("userpictures", "ticket_reporter_size", default="60")
@@ -18,6 +36,16 @@ class UserPicturesModule(Component):
     timeline_size = Option("userpictures", "timeline_size", default="30")
     browser_changeset_size = Option("userpictures", "browser_changeset_size", default="40")
     browser_lineitem_size = Option("userpictures", "browser_lineitem_size", default="20")
+
+    ## ITemplateProvider methods
+
+    def get_htdocs_dirs(self):
+        yield 'userpictures', resource_filename(__name__, 'htdocs')
+
+    def get_templates_dirs(self):
+        return []    
+
+    ## ITemplateStreamFilter methods
 
     def filter_stream(self, req, method, filename, stream, data):
         filter_ = []
@@ -34,17 +62,17 @@ class UserPicturesModule(Component):
             if f is not None:
                 stream |= f
 
-        #add_stylesheet(req, 'tracvatar/tracvatar.css')
+        add_stylesheet(req, 'userpictures/userpictures.css')
         return stream
 
-    def _generate_avatar(self, req, data, author, class_, size):
+    def _generate_avatar(self, req, author, class_, size):
         email_hash = hashlib.md5("ethan.jucovy@gmail.com").hexdigest()
         if req.base_url.startswith("https://"):
             href = "https://gravatar.com/avatar/" + email_hash
         else:
             href = "http://www.gravatar.com/avatar/" + email_hash
         href += "?size=%s" % size
-        return tag.img(src=href, class_='tracvatar %s' % class_,
+        return tag.img(src=href, class_='userpictures_avatar %s' % class_,
                        width=size, height=size).generate()
 
     def _ticket_filter(self, req, data):
@@ -61,7 +89,7 @@ class UserPicturesModule(Component):
 
         return [lambda stream: Transformer('//dd[@class="author"]'
                                            ).prepend(self._generate_avatar(
-                    req, data, author, 
+                    req, author, 
                     "ticket-comment-diff", self.ticket_comment_diff_size)
                                                      )(stream)]
 
@@ -72,7 +100,7 @@ class UserPicturesModule(Component):
 
         return [lambda stream: Transformer('//div[@id="ticket"]'
                                            ).prepend(self._generate_avatar(
-                    req, data, author,
+                    req, author,
                     'ticket-reporter', self.ticket_reporter_size)
                                                      )(stream)]
 
@@ -88,7 +116,7 @@ class UserPicturesModule(Component):
         def find_change(stream):
             stream = iter(stream)
             author = apply_authors.pop()
-            tag = self._generate_avatar(req, data, author,
+            tag = self._generate_avatar(req, author,
                                         'ticket-comment', self.ticket_comment_size)
             return itertools.chain([next(stream)], tag, stream)
 
@@ -99,20 +127,19 @@ class UserPicturesModule(Component):
         if 'events' not in data:
             return []
 
-        apply_authors = []
-        for event in reversed(data['events']):
-            author = event['author']
-            apply_authors.append(author)
-
-        def find_change(stream):
-            stream = iter(stream)
-            author = apply_authors.pop()
-            tag = self._generate_avatar(req, data, author,
-                                        'timeline', self.timeline_size)
-            return itertools.chain(tag, stream)
-
-        return [Transformer('//div[@id="content"]/dl/dt/a/span[@class="time"]'
-                            ).filter(find_change)]
+        # Instead of using a Genshi filter here,
+        # we'll reach into the guts of the context
+        # and manipulate the `render` function provided in there.
+        # This is likely to break one day since this is not a public API!
+        for event in data['events']:
+            base_render = event['render']
+            event['render'] = _render_event(
+                event, base_render, 
+                lambda author: self._generate_avatar(req, author, 
+                                                     'timeline',
+                                                     self.timeline_size))
+            
+        return []
 
     def _browser_filter(self, req, data):
         if 'dir' not in data:
@@ -127,7 +154,7 @@ class UserPicturesModule(Component):
 
         return [lambda stream: Transformer('//table[@id="info"]//th'
                                            ).prepend(self._generate_avatar(
-                    req, data, author,
+                    req, author,
                     "browser-changeset", self.browser_changeset_size)
                                                      )(stream)]
 
@@ -139,7 +166,7 @@ class UserPicturesModule(Component):
     def _browser_lineitem_render_filter(self, req, data):
         def find_change(stream):
             author = stream[1][1]
-            tag = self._generate_avatar(req, data, author,
+            tag = self._generate_avatar(req, author,
                                         'browser-lineitem', self.browser_lineitem_size)
             return itertools.chain([stream[0]], tag, stream[1:])
 
