@@ -46,6 +46,11 @@ img.userpictures_avatar.wiki-view {
   vertical-align: top;
 }
 
+img.userpictures_avatar.attachment-view {
+  margin: 3px 10px 3px 0px;
+  vertical-align: top;
+}
+
 img.userpictures_avatar.search-results {
   margin-right: 5px;
   margin-top: 3px;

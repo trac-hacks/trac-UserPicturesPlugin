@@ -43,6 +43,7 @@ class UserPicturesModule(Component):
     wiki_diff_size = Option("userpictures", "wiki_diff_size", default="30")
     wiki_history_lineitem_size = Option("userpictures", "wiki_history_lineitem_size", default="20")
     wiki_view_size = Option("userpictures", "wiki_view_size", default="40")
+    attachment_view_size = Option("userpictures", "attachment_view_size", default="40")
     attachment_lineitem_size = Option("userpictures", "attachment_lineitem_size", default="20")
 
     ## ITemplateProvider methods
@@ -71,7 +72,9 @@ class UserPicturesModule(Component):
             filter_.extend(self._report_filter(req, data))
         elif req.path_info.startswith("/wiki"):
             filter_.extend(self._wiki_filter(req, data))
-
+        elif req.path_info.startswith("/attachment"):
+            filter_.extend(self._attachment_filter(req, data))
+        
         if 'attachments' in data and data.get('attachments', {}).get('attachments'):
             filter_.extend(self._page_attachments_filter(req, data))
 
@@ -275,6 +278,17 @@ class UserPicturesModule(Component):
             return itertools.chain([stream[0]], tag, stream[1:])
 
         return [Transformer('//td[@class="author"]').filter(find_change)]
+
+    def _attachment_filter(self, req, data):
+        if not data.get('attachment'):
+            return []
+        author = data['attachment'].author
+        return [Transformer('//table[@id="info"]//th'
+                            ).prepend(
+                self._generate_avatar(
+                    req, author,
+                    "attachment-view", self.attachment_view_size)
+                )]
 
     def _page_attachments_filter(self, req, data):
         def find_change(stream):

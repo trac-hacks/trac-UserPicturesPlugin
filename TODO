@@ -1,5 +1,3 @@
-1. Add pictures for:
- * /attachment/
  
 2. Replace hardcoded gravatar with an OrderedExtensionPoint implementing IUserPicturesProvider
 
@@ -9,7 +7,7 @@
 
 5. Implement preferences screens for both IUserPicturesProviders
 
-6. Contact mike beyer
+6. Contact mike bayer
 
 7. Release! Announce!
 
