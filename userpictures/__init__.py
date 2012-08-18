@@ -42,6 +42,8 @@ class UserPicturesModule(Component):
     search_results_size = Option("userpictures", "search_results_size", default="20")
     wiki_diff_size = Option("userpictures", "wiki_diff_size", default="30")
     wiki_history_lineitem_size = Option("userpictures", "wiki_history_lineitem_size", default="20")
+    wiki_view_size = Option("userpictures", "wiki_view_size", default="40")
+    attachment_lineitem_size = Option("userpictures", "attachment_lineitem_size", default="20")
 
     ## ITemplateProvider methods
 
@@ -69,6 +71,9 @@ class UserPicturesModule(Component):
             filter_.extend(self._report_filter(req, data))
         elif req.path_info.startswith("/wiki"):
             filter_.extend(self._wiki_filter(req, data))
+
+        if 'attachments' in data and data.get('attachments', {}).get('attachments'):
+            filter_.extend(self._page_attachments_filter(req, data))
 
         for f in filter_:
             if f is not None:
@@ -241,6 +246,16 @@ class UserPicturesModule(Component):
             return self._wiki_diff_filter(req, data)
         elif "action=history" in req.query_string:
             return self._wiki_history_lineitem_filter(req, data)
+        elif "version" in req.query_string:
+            if 'page' not in data:
+                return []
+            author = data['page'].author
+            return [lambda stream: Transformer('//table[@id="info"]//th'
+                                               ).prepend(
+                    self._generate_avatar(
+                        req, author,
+                        "wiki-view", self.wiki_view_size)
+                    )(stream)]
         return []
 
     def _wiki_diff_filter(self, req, data):
@@ -261,4 +276,12 @@ class UserPicturesModule(Component):
 
         return [Transformer('//td[@class="author"]').filter(find_change)]
 
-    
+    def _page_attachments_filter(self, req, data):
+        def find_change(stream):
+            author = stream[1][1]
+            tag = self._generate_avatar(req, author,
+                                        'attachment-lineitem', self.attachment_lineitem_size)
+            return itertools.chain([stream[0]], tag, stream[1:])
+
+        return [Transformer('//div[@id="attachments"]/div/ul/li/em|//div[@id="attachments"]/div[@class="attachments"]/dl[@class="attachments"]/dt/em').filter(find_change)]
+        
