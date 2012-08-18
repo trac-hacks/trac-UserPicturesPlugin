@@ -1,14 +1,26 @@
 from genshi.filters.transform import Transformer
 from genshi.builder import tag
-import hashlib
 import itertools
 from pkg_resources import resource_filename
-import re
 
 from trac.config import *
 from trac.core import *
-from trac.web.chrome import ITemplateProvider, add_stylesheet
 from trac.web.api import ITemplateStreamFilter
+from trac.web.chrome import ITemplateProvider, add_stylesheet
+
+class IUserPicturesProvider(Interface):
+    def get_src(req, username, size):
+        """
+        Return the path to an image for this user, either locally or on the web
+        """
+
+class DefaultUserPicturesProvider(Component):
+    implements(IUserPicturesProvider)
+
+    def get_src(self, req, username, size):
+        return req.href.chrome('userpictures/default-portrait.gif')
+
+from userpictures.providers import *
 
 class _render_event(object):
     def __init__(self, event, base_render, generate_avatar):
@@ -29,6 +41,10 @@ class _render_event(object):
 
 class UserPicturesModule(Component):
     implements(ITemplateStreamFilter, ITemplateProvider)
+
+    pictures_provider = ExtensionOption('userpictures', 'pictures_provider',
+                                        IUserPicturesProvider,
+                                        'DefaultUserPicturesProvider')
 
     ticket_comment_diff_size = Option("userpictures", "ticket_comment_diff_size", default="30")
     ticket_reporter_size = Option("userpictures", "ticket_reporter_size", default="60")
@@ -86,12 +102,7 @@ class UserPicturesModule(Component):
         return stream
 
     def _generate_avatar(self, req, author, class_, size):
-        email_hash = hashlib.md5("ethan.jucovy@gmail.com").hexdigest()
-        if req.base_url.startswith("https://"):
-            href = "https://gravatar.com/avatar/" + email_hash
-        else:
-            href = "http://www.gravatar.com/avatar/" + email_hash
-        href += "?size=%s" % size
+        href = self.pictures_provider.get_src(req, author, size)
         return tag.img(src=href, class_='userpictures_avatar %s' % class_,
                        width=size, height=size).generate()
 
@@ -283,6 +294,8 @@ class UserPicturesModule(Component):
         if not data.get('attachment'):
             return []
         author = data['attachment'].author
+        if not author:
+            return []
         return [Transformer('//table[@id="info"]//th'
                             ).prepend(
                 self._generate_avatar(
