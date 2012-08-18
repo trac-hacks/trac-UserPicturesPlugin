@@ -24,12 +24,14 @@ img.userpictures_avatar.ticket-owner {
   vertical-align: middle;
 }
 
-img.userpictures_avatar.browser-lineitem {
+img.userpictures_avatar.browser-lineitem,
+img.userpictures_avatar.wiki-history-lineitem {
   margin: 0 5px 0 0;
 }
 
 img.userpictures_avatar.browser-changeset,
-img.userpictures_avatar.ticket-comment-diff {
+img.userpictures_avatar.ticket-comment-diff,
+img.userpictures_avatar.wiki-diff {
   margin: 3px 10px 5px 0px;
   vertical-align: middle;
 }

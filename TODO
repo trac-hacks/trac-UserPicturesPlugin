@@ -1,7 +1,5 @@
 1. Add pictures for:
  * /attachment/
- * /wiki/ diff ("last modified") - should be like ticket-comment-diff and browser-changeset
- * /wiki/ history ("history")
  
 2. Replace hardcoded gravatar with an OrderedExtensionPoint implementing IUserPicturesProvider
 

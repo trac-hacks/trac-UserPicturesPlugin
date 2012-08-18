@@ -40,6 +40,8 @@ class UserPicturesModule(Component):
     browser_filesource_size = Option("userpictures", "browser_filesource_size", default="40")
     browser_lineitem_size = Option("userpictures", "browser_lineitem_size", default="20")
     search_results_size = Option("userpictures", "search_results_size", default="20")
+    wiki_diff_size = Option("userpictures", "wiki_diff_size", default="30")
+    wiki_history_lineitem_size = Option("userpictures", "wiki_history_lineitem_size", default="20")
 
     ## ITemplateProvider methods
 
@@ -65,6 +67,8 @@ class UserPicturesModule(Component):
             filter_.extend(self._search_filter(req, data))
         elif req.path_info.startswith("/report") or req.path_info.startswith("/query"):
             filter_.extend(self._report_filter(req, data))
+        elif req.path_info.startswith("/wiki"):
+            filter_.extend(self._wiki_filter(req, data))
 
         for f in filter_:
             if f is not None:
@@ -231,3 +235,30 @@ class UserPicturesModule(Component):
             return itertools.chain([stream[0]], tag, stream[1:])
 
         return [Transformer('//table[@class="listing tickets"]/tbody/tr/td[@class="owner"]|//table[@class="listing tickets"]/tbody/tr/td[@class="reporter"]').filter(find_change)]
+
+    def _wiki_filter(self, req, data):
+        if "action=diff" in req.query_string:
+            return self._wiki_diff_filter(req, data)
+        elif "action=history" in req.query_string:
+            return self._wiki_history_lineitem_filter(req, data)
+        return []
+
+    def _wiki_diff_filter(self, req, data):
+        author = data['change']['author']
+
+        return [lambda stream: Transformer('//dd[@class="author"]'
+                                           ).prepend(self._generate_avatar(
+                    req, author, 
+                    "wiki-diff", self.wiki_diff_size)
+                                                     )(stream)]
+    
+    def _wiki_history_lineitem_filter(self, req, data):
+        def find_change(stream):
+            author = stream[1][1]
+            tag = self._generate_avatar(req, author,
+                                        'wiki-history-lineitem', self.wiki_history_lineitem_size)
+            return itertools.chain([stream[0]], tag, stream[1:])
+
+        return [Transformer('//td[@class="author"]').filter(find_change)]
+
+    
