@@ -155,14 +155,14 @@ class UserPicturesModule(Component):
         return []
 
     def _browser_filter(self, req, data):
-        if not data.get('dir'):
-            return self._browser_changeset_filter(req, data)
-        else:
-            return self._browser_lineitem_filter(req, data)
+        filter_ = []
+        filter_.extend(self._browser_changeset_filter(req, data))
+        filter_.extend(self._browser_lineitem_filter(req, data))
+        return filter_
 
     def _browser_changeset_filter(self, req, data):
         author = None
-        if data.get('file', {}).get('changeset'):
+        if (data.get('file') or {}).get('changeset'):
             author = data['file']['changeset'].author
         elif 'changeset' in data:
             author = data['changeset'].author
@@ -182,11 +182,6 @@ class UserPicturesModule(Component):
                 ]
 
     def _browser_lineitem_filter(self, req, data):
-        if not data.get('dir') or 'changes' not in data['dir']:
-            return []
-        return self._browser_lineitem_render_filter(req, data)
-    
-    def _browser_lineitem_render_filter(self, req, data):
         def find_change(stream):
             author = stream[1][1]
             tag = self._generate_avatar(req, author,
