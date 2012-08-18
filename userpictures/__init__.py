@@ -36,6 +36,7 @@ class UserPicturesModule(Component):
     ticket_comment_size = Option("userpictures", "ticket_comment_size", default="40")
     timeline_size = Option("userpictures", "timeline_size", default="30")
     browser_changeset_size = Option("userpictures", "browser_changeset_size", default="30")
+    browser_filesource_size = Option("userpictures", "browser_filesource_size", default="40")
     browser_lineitem_size = Option("userpictures", "browser_lineitem_size", default="20")
 
     ## ITemplateProvider methods
@@ -154,7 +155,7 @@ class UserPicturesModule(Component):
         return []
 
     def _browser_filter(self, req, data):
-        if 'dir' not in data:
+        if not data.get('dir'):
             return self._browser_changeset_filter(req, data)
         else:
             return self._browser_lineitem_filter(req, data)
@@ -171,7 +172,7 @@ class UserPicturesModule(Component):
         return [lambda stream: Transformer('//table[@id="info"]//th'
                                            ).prepend(self._generate_avatar(
                     req, author,
-                    "browser-changeset", self.browser_changeset_size)
+                    "browser-filesource", self.browser_filesource_size)
                                                      )(stream),
                 lambda stream: Transformer('//dd[@class="author"]'
                                            ).prepend(self._generate_avatar(

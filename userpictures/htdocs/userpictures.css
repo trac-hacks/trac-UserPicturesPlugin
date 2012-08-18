@@ -32,3 +32,8 @@ img.userpictures_avatar.browser-changeset {
   margin: 3px 10px 5px 0px;
   vertical-align: middle;
 }
+
+img.userpictures_avatar.browser-filesource {
+  margin: 3px 10px 0px 0px;
+  vertical-align: top;
+}
