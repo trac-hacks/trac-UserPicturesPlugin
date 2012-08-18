@@ -38,6 +38,7 @@ class UserPicturesModule(Component):
     browser_changeset_size = Option("userpictures", "browser_changeset_size", default="30")
     browser_filesource_size = Option("userpictures", "browser_filesource_size", default="40")
     browser_lineitem_size = Option("userpictures", "browser_lineitem_size", default="20")
+    search_results_size = Option("userpictures", "search_results_size", default="20")
 
     ## ITemplateProvider methods
 
@@ -59,6 +60,8 @@ class UserPicturesModule(Component):
             filter_.extend(self._browser_filter(req, data))
         elif req.path_info.startswith("/log"):
             filter_.extend(self._log_filter(req, data))
+        elif req.path_info.startswith("/search"):
+            filter_.extend(self._search_filter(req, data))
 
         for f in filter_:
             if f is not None:
@@ -195,3 +198,16 @@ class UserPicturesModule(Component):
             return []
 
         return self._browser_lineitem_render_filter(req, data)
+
+    def _search_filter(self, req, data):
+        if 'results' not in data:
+            return []
+
+        def find_change(stream):
+            author = stream[1][1]
+            tag = self._generate_avatar(req, author,
+                                        'search-results', 
+                                        self.search_results_size)
+            return itertools.chain([stream[0]], tag, stream[1:])
+
+        return [Transformer('//span[@class="author"]').filter(find_change)]

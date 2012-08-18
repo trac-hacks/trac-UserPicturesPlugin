@@ -38,3 +38,9 @@ img.userpictures_avatar.browser-filesource {
   margin: 3px 10px 0px 0px;
   vertical-align: top;
 }
+
+img.userpictures_avatar.search-results {
+  margin-right: 5px;
+  margin-top: 3px;
+  vertical-align: middle;
+}
