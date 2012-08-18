@@ -28,7 +28,8 @@ img.userpictures_avatar.browser-lineitem {
   margin: 0 5px 0 0;
 }
 
-img.userpictures_avatar.browser-changeset {
+img.userpictures_avatar.browser-changeset,
+img.userpictures_avatar.ticket-comment-diff {
   margin: 3px 10px 5px 0px;
   vertical-align: middle;
 }

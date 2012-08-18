@@ -30,7 +30,7 @@ class _render_event(object):
 class UserPicturesModule(Component):
     implements(ITemplateStreamFilter, ITemplateProvider)
 
-    ticket_comment_diff_size = Option("userpictures", "ticket_comment_diff_size", default="40")
+    ticket_comment_diff_size = Option("userpictures", "ticket_comment_diff_size", default="30")
     ticket_reporter_size = Option("userpictures", "ticket_reporter_size", default="60")
     ticket_owner_size = Option("userpictures", "ticket_owner_size", default="30")
     ticket_comment_size = Option("userpictures", "ticket_comment_size", default="40")
