@@ -1,6 +1,10 @@
+img.userpictures_avatar {
+  box-shadow: 2px 2px 4px #444;
+}
+
 img.userpictures_avatar.timeline {
-  padding-top: 0.2em;
-  padding-right: 1em;
+  margin-top: 0.2em;
+  margin-right: 1em;
   margin-left: -5.8em;
   vertical-align: text-top;
 }
