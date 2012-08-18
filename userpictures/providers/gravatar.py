@@ -26,7 +26,7 @@ class UserPicturesGravatarProvider(Component):
         email = ''
         if '@' not in username:
             if username != 'anonymous':
-                email = self.email_map.get(username, '')
+                email = self.email_map.get(username) or ''
         else:
             author_info = self._long_author_re.match(username)
             if author_info:
