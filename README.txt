@@ -4,6 +4,8 @@ Screenshots of the plugin in action can be found at https://github.com/boldprogr
 
 Credit goes to Michael Bayer for the idea -- and most of the code -- in https://bitbucket.org/zzzeek/tracvatar
 
+A mirror is also available on Bitbucket: https://bitbucket.org/boldprogressives/trac-userpictures-plugin
+
 The avatar engine is configurable, and two are provided in this
 package: a GravatarProvider that looks up the user's email address at
 Gravatar, and a UserManagerProvider that uses internally hosted images
