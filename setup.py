@@ -7,7 +7,7 @@ try:
 except:
     long_description = ''
 
-setup(name='trac-UserPictures',
+setup(name='trac-UserPicturesPlugin',
       version=version,
       description="Adds user pictures to Trac",
       long_description=long_description,
