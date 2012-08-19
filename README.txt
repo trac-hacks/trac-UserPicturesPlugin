@@ -1,5 +1,7 @@
 Adds user picture icons (avatars) to Trac.
 
+Screenshots of the plugin in action can be found at https://github.com/boldprogressives/trac-UserPicturesPlugin/wiki/Screenshots
+
 Credit goes to Michael Bayer for the idea -- and most of the code -- in https://bitbucket.org/zzzeek/tracvatar
 
 The avatar engine is configurable, and two are provided in this
