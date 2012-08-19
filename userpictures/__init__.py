@@ -212,7 +212,7 @@ class UserPicturesModule(Component):
 
     def _browser_lineitem_filter(self, req, data):
         def find_change(stream):
-            author = stream[1][1]
+            author = ''.join(stream_part[1] for stream_part in stream if stream_part[0] == 'TEXT').strip()
             tag = self._generate_avatar(req, author,
                                         'browser-lineitem', self.browser_lineitem_size)
             return itertools.chain([stream[0]], tag, stream[1:])
@@ -229,8 +229,15 @@ class UserPicturesModule(Component):
         if 'results' not in data:
             return []
 
+        ## The stream contains this stupid "By ethan" instead of just "ethan"
+        ## so we'll rely on the ordering of the data instead, 
+        ## and file a ticket with Trac core eventually
+        results_iter = iter(data['results'])
         def find_change(stream):
-            author = stream[1][1]
+            try:
+                author = results_iter.next()['author']
+            except StopIteration:
+                author = ''.join(stream_part[1] for stream_part in stream if stream_part[0] == 'TEXT').strip() ## As a fallback, we may as well, but this should never happen...
             tag = self._generate_avatar(req, author,
                                         'search-results', 
                                         self.search_results_size)
@@ -248,7 +255,7 @@ class UserPicturesModule(Component):
             class_ = 'report'
 
         def find_change(stream):
-            author = stream[1][1]
+            author = ''.join(stream_part[1] for stream_part in stream if stream_part[0] == 'TEXT').strip()
             tag = self._generate_avatar(req, author,
                                         class_, self.report_size)
             return itertools.chain([stream[0]], tag, stream[1:])
@@ -283,7 +290,7 @@ class UserPicturesModule(Component):
     
     def _wiki_history_lineitem_filter(self, req, data):
         def find_change(stream):
-            author = stream[1][1]
+            author = ''.join(stream_part[1] for stream_part in stream if stream_part[0] == 'TEXT').strip()
             tag = self._generate_avatar(req, author,
                                         'wiki-history-lineitem', self.wiki_history_lineitem_size)
             return itertools.chain([stream[0]], tag, stream[1:])
@@ -305,7 +312,7 @@ class UserPicturesModule(Component):
 
     def _page_attachments_filter(self, req, data):
         def find_change(stream):
-            author = stream[1][1]
+            author = ''.join(stream_part[1] for stream_part in stream if stream_part[0] == 'TEXT').strip()
             tag = self._generate_avatar(req, author,
                                         'attachment-lineitem', self.attachment_lineitem_size)
             return itertools.chain([stream[0]], tag, stream[1:])
