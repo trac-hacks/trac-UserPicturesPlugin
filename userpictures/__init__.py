@@ -223,7 +223,7 @@ class UserPicturesModule(Component):
         if 'changes' not in data:
             return []
 
-        return self._browser_lineitem_render_filter(req, data)
+        return self._browser_lineitem_filter(req, data)
 
     def _search_filter(self, req, data):
         if 'results' not in data:
