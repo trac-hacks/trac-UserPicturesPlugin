@@ -1,11 +1,15 @@
 from setuptools import find_packages, setup
 
-version='0.1'
+version='0.1.1'
 
 try:
     long_description = open("README.txt").read()
 except:
     long_description = ''
+try:
+    long_description += open("CHANGES.txt").read()
+except:
+    pass
 
 setup(name='trac-UserPicturesPlugin',
       version=version,

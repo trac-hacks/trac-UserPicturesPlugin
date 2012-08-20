@@ -1,0 +1,12 @@
+Changes
+=======
+
+0.1.1 (20 Aug 2012)
+-------------------
+
+Fixed typo in code that caused Python error when navigating to browser views
+
+0.1 (19 Aug 2012)
+-----------------
+
+Initial release.

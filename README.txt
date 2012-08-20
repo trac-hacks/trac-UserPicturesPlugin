@@ -34,7 +34,8 @@ patch.
 
 Patches implementing additional avatar engines are also welcome.
 
-== Installation ==
+Installation
+============
 
 Install the plugin in your favorite way (python setup.py develop,
 uploading an egg, etc) and then enable its components in trac.ini like
