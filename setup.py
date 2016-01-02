@@ -21,7 +21,6 @@ setup(name='trac-UserPicturesPlugin',
       keywords='trac plugin',
       license="BSD",
       packages=find_packages(exclude=['ez_setup', 'examples', 'tests*']),
-      include_package_data=True,
       package_data={ 'userpictures': ['templates/*', 'htdocs/*'] },
       zip_safe=False,
       entry_points = """
