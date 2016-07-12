@@ -194,7 +194,10 @@ class UserPicturesModule(Component):
         if (data.get('file') or {}).get('changeset'):
             author = data['file']['changeset'].author
         elif 'changeset' in data:
-            author = data['changeset'].author
+            try:
+                author = data['changeset'].author
+            except AttributeError:
+                pass
         if author is None:
             return []
 
