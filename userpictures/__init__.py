@@ -157,7 +157,9 @@ class UserPicturesModule(Component):
 
         apply_authors = []
         for change in data['changes']:
-            author = change['author']
+            author = change.get('author')
+            if not author:
+                continue
             apply_authors.insert(0, author)
 
         def find_change(stream):
