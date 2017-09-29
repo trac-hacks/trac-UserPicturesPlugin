@@ -1,18 +1,20 @@
 from genshi.filters.transform import Transformer
-from genshi.builder import tag
 import itertools
 from pkg_resources import resource_filename
 
 from trac.config import *
 from trac.core import *
+from trac.util.html import html as tag
 from trac.web.api import ITemplateStreamFilter
 from trac.web.chrome import ITemplateProvider, add_stylesheet
+
 
 class IUserPicturesProvider(Interface):
     def get_src(req, username, size):
         """
         Return the path to an image for this user, either locally or on the web
         """
+
 
 class DefaultUserPicturesProvider(Component):
     implements(IUserPicturesProvider)
@@ -21,6 +23,7 @@ class DefaultUserPicturesProvider(Component):
         return req.href.chrome('userpictures/default-portrait.gif')
 
 from userpictures.providers import *
+
 
 class _render_event(object):
     def __init__(self, event, base_render, generate_avatar):
@@ -62,15 +65,15 @@ class UserPicturesModule(Component):
     attachment_view_size = Option("userpictures", "attachment_view_size", default="40")
     attachment_lineitem_size = Option("userpictures", "attachment_lineitem_size", default="20")
 
-    ## ITemplateProvider methods
+    # ITemplateProvider methods
 
     def get_htdocs_dirs(self):
         yield 'userpictures', resource_filename(__name__, 'htdocs')
 
     def get_templates_dirs(self):
-        return []    
+        return []
 
-    ## ITemplateStreamFilter methods
+    # ITemplateStreamFilter methods
 
     def filter_stream(self, req, method, filename, stream, data):
         filter_ = []
@@ -78,20 +81,23 @@ class UserPicturesModule(Component):
             filter_.extend(self._ticket_filter(req, data))
         elif req.path_info.startswith("/timeline"):
             filter_.extend(self._timeline_filter(req, data))
-        elif req.path_info.startswith("/browser") or req.path_info.startswith("/changeset"):
+        elif req.path_info.startswith("/browser") or \
+                req.path_info.startswith("/changeset"):
             filter_.extend(self._browser_filter(req, data))
         elif req.path_info.startswith("/log"):
             filter_.extend(self._log_filter(req, data))
         elif req.path_info.startswith("/search"):
             filter_.extend(self._search_filter(req, data))
-        elif req.path_info.startswith("/report") or req.path_info.startswith("/query"):
+        elif req.path_info.startswith("/report") or \
+                req.path_info.startswith("/query"):
             filter_.extend(self._report_filter(req, data))
         elif req.path_info.startswith("/wiki"):
             filter_.extend(self._wiki_filter(req, data))
         elif req.path_info.startswith("/attachment"):
             filter_.extend(self._attachment_filter(req, data))
-        
-        if 'attachments' in data and data.get('attachments', {}).get('attachments'):
+
+        if 'attachments' in data and \
+                data.get('attachments', {}).get('attachments'):
             filter_.extend(self._page_attachments_filter(req, data))
 
         for f in filter_:
@@ -121,7 +127,7 @@ class UserPicturesModule(Component):
 
         return [lambda stream: Transformer('//dd[@class="author"]'
                                            ).prepend(self._generate_avatar(
-                    req, author, 
+                    req, author,
                     "ticket-comment-diff", self.ticket_comment_diff_size)
                                                      )(stream)]
 
@@ -143,9 +149,8 @@ class UserPicturesModule(Component):
         return [lambda stream: Transformer('//td[@headers="h_owner"]'
                                            ).prepend(self._generate_avatar(
                     req, author,
-                    'ticket-owner', self.ticket_owner_size)
-                                                     )(stream)]
-        
+                    'ticket-owner', self.ticket_owner_size))(stream)]
+
     def _ticket_comment_filter(self, req, data):
         if 'changes' not in data:
             return []
@@ -159,7 +164,8 @@ class UserPicturesModule(Component):
             stream = iter(stream)
             author = apply_authors.pop()
             tag = self._generate_avatar(req, author,
-                                        'ticket-comment', self.ticket_comment_size)
+                                        'ticket-comment',
+                                        self.ticket_comment_size)
             return itertools.chain([next(stream)], tag, stream)
 
         return [Transformer('//div[@id="changelog"]/div[@class="change"]/h3[@class="change"]'
@@ -176,11 +182,11 @@ class UserPicturesModule(Component):
         for event in data['events']:
             base_render = event['render']
             event['render'] = _render_event(
-                event, base_render, 
-                lambda author: self._generate_avatar(req, author, 
+                event, base_render,
+                lambda author: self._generate_avatar(req, author,
                                                      'timeline',
                                                      self.timeline_size))
-            
+
         return []
 
     def _browser_filter(self, req, data):
@@ -215,9 +221,12 @@ class UserPicturesModule(Component):
 
     def _browser_lineitem_filter(self, req, data):
         def find_change(stream):
-            author = ''.join(stream_part[1] for stream_part in stream if stream_part[0] == 'TEXT').strip()
+            author = ''.join(stream_part[1]
+                             for stream_part in stream
+                             if stream_part[0] == 'TEXT').strip()
             tag = self._generate_avatar(req, author,
-                                        'browser-lineitem', self.browser_lineitem_size)
+                                        'browser-lineitem',
+                                        self.browser_lineitem_size)
             return itertools.chain([stream[0]], tag, stream[1:])
 
         return [Transformer('//td[@class="author"]').filter(find_change)]
@@ -232,17 +241,21 @@ class UserPicturesModule(Component):
         if 'results' not in data:
             return []
 
-        ## The stream contains this stupid "By ethan" instead of just "ethan"
-        ## so we'll rely on the ordering of the data instead, 
-        ## and file a ticket with Trac core eventually
+        # The stream contains this stupid "By ethan" instead of just "ethan"
+        # so we'll rely on the ordering of the data instead,
+        # and file a ticket with Trac core eventually
         results_iter = iter(data['results'])
+
         def find_change(stream):
             try:
                 author = results_iter.next()['author']
             except StopIteration:
-                author = ''.join(stream_part[1] for stream_part in stream if stream_part[0] == 'TEXT').strip() ## As a fallback, we may as well, but this should never happen...
+                # As a fallback, we may as well, but this should never happen.
+                author = ''.join(stream_part[1]
+                                 for stream_part in stream
+                                 if stream_part[0] == 'TEXT').strip()
             tag = self._generate_avatar(req, author,
-                                        'search-results', 
+                                        'search-results',
                                         self.search_results_size)
             return itertools.chain([stream[0]], tag, stream[1:])
 
@@ -258,7 +271,9 @@ class UserPicturesModule(Component):
             class_ = 'report'
 
         def find_change(stream):
-            author = ''.join(stream_part[1] for stream_part in stream if stream_part[0] == 'TEXT').strip()
+            author = ''.join(stream_part[1]
+                             for stream_part in stream
+                             if stream_part[0] == 'TEXT').strip()
             tag = self._generate_avatar(req, author,
                                         class_, self.report_size)
             return itertools.chain([stream[0]], tag, stream[1:])
@@ -287,15 +302,18 @@ class UserPicturesModule(Component):
 
         return [lambda stream: Transformer('//dd[@class="author"]'
                                            ).prepend(self._generate_avatar(
-                    req, author, 
+                    req, author,
                     "wiki-diff", self.wiki_diff_size)
                                                      )(stream)]
-    
+
     def _wiki_history_lineitem_filter(self, req, data):
         def find_change(stream):
-            author = ''.join(stream_part[1] for stream_part in stream if stream_part[0] == 'TEXT').strip()
+            author = ''.join(stream_part[1]
+                             for stream_part in stream
+                             if stream_part[0] == 'TEXT').strip()
             tag = self._generate_avatar(req, author,
-                                        'wiki-history-lineitem', self.wiki_history_lineitem_size)
+                                        'wiki-history-lineitem',
+                                        self.wiki_history_lineitem_size)
             return itertools.chain([stream[0]], tag, stream[1:])
 
         return [Transformer('//td[@class="author"]').filter(find_change)]
@@ -315,10 +333,12 @@ class UserPicturesModule(Component):
 
     def _page_attachments_filter(self, req, data):
         def find_change(stream):
-            author = ''.join(stream_part[1] for stream_part in stream if stream_part[0] == 'TEXT').strip()
+            author = ''.join(stream_part[1]
+                             for stream_part in stream
+                             if stream_part[0] == 'TEXT').strip()
             tag = self._generate_avatar(req, author,
-                                        'attachment-lineitem', self.attachment_lineitem_size)
+                                        'attachment-lineitem',
+                                        self.attachment_lineitem_size)
             return itertools.chain([stream[0]], tag, stream[1:])
 
         return [Transformer('//div[@id="attachments"]/div/ul/li/em|//div[@id="attachments"]/div[@class="attachments"]/dl[@class="attachments"]/dt/em').filter(find_change)]
-        

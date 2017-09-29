@@ -6,6 +6,7 @@ from trac.core import *
 
 from userpictures import IUserPicturesProvider
 
+
 class UserPicturesGravatarProvider(Component):
     implements(IUserPicturesProvider)
 
@@ -42,4 +43,3 @@ class UserPicturesGravatarProvider(Component):
             href = "http://www.gravatar.com/avatar/" + email_hash
         href += "?size=%s" % size
         return href
-
